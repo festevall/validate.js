@@ -1118,7 +1118,7 @@
         "(?:\\S+(?::\\S*)?@)?" +
         "(?:";
 
-      var tld = "(?:\\.(?:[a-z\\u00a1-\\uffff]{2,}))";
+      var tld = "(?:\\.(?:[a-z\\u00a1-\\uffff]{2,24}))";
 
       if (allowLocal) {
         tld += "?";
@@ -1142,9 +1142,9 @@
           "(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))" +
         "|" +
           // host name
-          "(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)" +
+          "(?:[a-z\\u00a1-\\uffff0-9](?:[-a-z\\u00a1-\\uffff0-9]{0,61}[a-z\\u00a1-\\uffff0-9])?)" +
           // domain name
-          "(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*" +
+          "(?:\\.(?:[a-z\\u00a1-\\uffff0-9](?:[-a-z\\u00a1-\\uffff0-9]{0,61}[a-z\\u00a1-\\uffff0-9])?)){0,10}" +
           tld +
         ")" +
         // port number
@@ -1154,15 +1154,14 @@
       "$";
 
       if (allowDataUrl) {
-        // RFC 2397
-        var mediaType = "\\w+\\/[-+.\\w]+(?:;[\\w=]+)*";
-        var urlchar = "[A-Za-z0-9-_.!~\\*'();\\/?:@&=+$,%]*";
-        var dataurl = "data:(?:"+mediaType+")?(?:;base64)?,"+urlchar;
-        regex = "(?:"+regex+")|(?:^"+dataurl+"$)";
+        var mediaType = "(?:\\w+\\/[-+.\\w]+(?:;[\\w=]+)*)?"; // Media type is now optional
+        var urlchar = "[A-Za-z0-9-_.!~*'();\\/?:@&=+$,%]*";  // Allow encoded characters
+        var dataurl = "data:" + mediaType + "(?:;base64)?," + urlchar;
+        regex = "(?:" + regex + ")|(?:^" + dataurl + "$)";
       }
 
       var PATTERN = new RegExp(regex, 'i');
-      if (!PATTERN.exec(value)) {
+      if (!PATTERN.test(value)) {
         return message;
       }
     },
